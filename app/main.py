@@ -45,16 +45,28 @@ def get_model():
 def build_reply(text, lang):
     q, matches = top_matches(text)
     opener = OPENERS.get((lang or "en")[:2], OPENERS["en"])
+    if not matches:
+        return {
+            "reply": "I could not find a match for that in the sample list, so I will not guess. "
+                     "Try telling me your state, your sector such as education or health, or whether you want a grant or a fellowship.",
+            "understood": {"location": q["location"], "sectors": sorted(q["sectors"]), "types": sorted(q["types"])},
+            "matches": [],
+        }
     parts = [opener]
     for i, m in enumerate(matches, 1):
-        parts.append(
-            f"{i}. {m['title']}, by {m['organiser']}. "
-            f"Who can apply: {m['who_can_apply']}. "
-            f"Deadline: {m['deadline']}."
-        )
+        who = m.get("who_can_apply")
+        who_part = f" Who can apply: {who}." if who and who != "None" else ""
+        parts.append(f"{i}. {m['title']}, by {m['organiser']}.{who_part} Deadline: {m['deadline']}.")
     parts.append("Tap a card to open the official link, or ask me another way.")
+    first = matches[0]
+    who1 = first.get("who_can_apply")
+    spoken = f"{opener} Top match: {first['title']}, by {first['organiser']}."
+    if who1 and who1 != "None":
+        spoken += f" Who can apply: {who1}."
+    spoken += " The other matches are on the cards."
     return {
         "reply": " ".join(parts),
+        "spoken": spoken,
         "understood": {
             "location": q["location"],
             "sectors": sorted(q["sectors"]),
@@ -88,9 +100,14 @@ async def ask(audio: UploadFile = File(...)):
     with open(tmp, "wb") as f:
         f.write(raw)
     model = get_model()
-    segments, info = model.transcribe(tmp)
-    transcript = " ".join(seg.text for seg in segments).strip()
-    lang = getattr(info, "language", "en") or "en"
+    # A small CPU model sometimes stops early on accented or noisy speech.
+    # Try two decoding settings and keep the fuller transcript.
+    transcript, lang = "", "en"
+    for opts in ({}, {"beam_size": 5, "vad_filter": True}):
+        segments, info = model.transcribe(tmp, **opts)
+        text = " ".join(seg.text for seg in segments).strip()
+        if len(text) > len(transcript):
+            transcript, lang = text, getattr(info, "language", "en") or "en"
     if not transcript:
         return JSONResponse({
             "transcript": "",

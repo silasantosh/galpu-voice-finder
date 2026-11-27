@@ -19,17 +19,17 @@ STATES = {
     "jharkhand": "Jharkhand", "karnataka": "Karnataka", "kerala": "Kerala",
     "madhya pradesh": "Madhya Pradesh", "maharashtra": "Maharashtra",
     "manipur": "Manipur", "meghalaya": "Meghalaya", "mizoram": "Mizoram",
-    "nagaland": "Nagaland", "odisha": "Odisha", "orissa": "Odisha",
+    "nagaland": "Nagaland", "odisha": "Odisha", "orissa": "Odisha", "ओडिशा": "Odisha", "ओडिसा": "Odisha", "उड़ीसा": "Odisha", "ଓଡ଼ିଶା": "Odisha",
     "punjab": "Punjab", "rajasthan": "Rajasthan", "sikkim": "Sikkim",
     "tamil nadu": "Tamil Nadu", "tamilnadu": "Tamil Nadu", "telangana": "Telangana",
     "tripura": "Tripura", "uttar pradesh": "Uttar Pradesh", "uttarakhand": "Uttarakhand",
-    "west bengal": "West Bengal", "bengal": "West Bengal", "delhi": "Delhi",
+    "west bengal": "West Bengal", "bengal": "West Bengal", "delhi": "Delhi", "दिल्ली": "Delhi", "महाराष्ट्र": "Maharashtra", "कर्नाटक": "Karnataka", "तमिलनाडु": "Tamil Nadu", "बिहार": "Bihar",
 }
 
 SECTORS = {
-    "education": ["education", "school", "student", "children", "child", "teacher", "learning", "scholarship", "shiksha", "padhai", "vidya"],
-    "health": ["health", "hospital", "medical", "clinic", "swasthya", "doctor", "patient"],
-    "women": ["women", "woman", "girl", "mahila", "mahila", "stree"],
+    "education": ["education", "school", "student", "children", "child", "teacher", "learning", "scholarship", "shiksha", "padhai", "vidya", "शिक्षा", "एजुकेशन", "एजूकेशन", "एजू", "एजो", "स्कूल", "बच्चों", "पढ़ाई", "ଶିକ୍ଷା"],
+    "health": ["health", "hospital", "medical", "clinic", "swasthya", "doctor", "patient", "स्वास्थ्य", "हेल्थ", "अस्पताल"],
+    "women": ["women", "woman", "girl", "stree", "महिला", "महिलाओं", "लड़कियों"],
     "livelihood": ["livelihood", "skill", "skills", "job", "employment", "rozgar", "income", "artisan", "farmer", "agriculture", "kisan", "self help", "shg"],
     "environment": ["environment", "climate", "tree", "water", "forest", "clean"],
     "disability": ["disability", "disabled", "divyang"],
@@ -37,11 +37,14 @@ SECTORS = {
 }
 
 TYPES = {
-    "grant": ["grant", "grants", "funding", "fund", "anudan"],
-    "fellowship": ["fellowship", "fellow"],
-    "award": ["award", "prize", "puraskar", "recognition"],
+    "grant": ["grant", "grants", "funding", "fund", "anudan", "ग्रांट", "ग्रान", "अनुदान", "फंड", "फ़ंड", "आर्थिक सहायता"],
+    "fellowship": ["fellowship", "fellow", "फ़ेलोशिप", "फेलोशिप"],
+    "award": ["award", "prize", "puraskar", "recognition", "अवॉर्ड", "पुरस्कार"],
     "csr": ["csr"],
 }
+
+
+ORG_WORDS = ["nonprofit", "non-profit", "ngo", "not-for-profit", "एनजीओ", "नॉनप्रॉफ़िट", "नॉन-प्रॉफ़िट", "नॉनप्रॉफिट", "प्रोफिट", "प्रोफ़िट", "प्रॉफ़िट", "प्रफिट", "गैर-सरकारी", "ग़ैर-सरकारी", "संस्था"]
 
 
 def _hits(text, groups):
@@ -66,6 +69,7 @@ def extract(text):
         "location": location,
         "sectors": _hits(t, SECTORS),
         "types": _hits(t, TYPES),
+        "org": any(w in t for w in ORG_WORDS),
     }
 
 
@@ -83,13 +87,23 @@ def score(opp, q):
     for typ in q["types"]:
         if typ in blob:
             s += 2
+    who = str(opp.get("who_can_apply", "")).lower()
+    if q.get("org") and any(w in who for w in ("nonprofit", "not-for-profit", "ngo darpan")):
+        s += 3
     # Open or unstated deadlines stay eligible; nothing is filtered out.
     if s == 0:
         s = 1  # keep every real item reachable, weakest last
     return s
 
 
+def has_signal(q):
+    """True when the question named a place, a sector, an opportunity type or an NGO."""
+    return bool(q["location"] or q["sectors"] or q["types"] or q.get("org"))
+
+
 def top_matches(text, n=3):
     q = extract(text)
+    if not has_signal(q):
+        return q, []  # nothing recognised: say so, never invent a match
     ranked = sorted(OPPORTUNITIES, key=lambda o: score(o, q), reverse=True)
     return q, ranked[:n]

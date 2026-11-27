@@ -40,10 +40,14 @@ size (default `small`; `tiny` is faster on weak hardware).
    environment…), the state you mention, and the kind of opportunity you want.
 4. It replies by voice, starting in your language, and shows the top 3 matches
    as cards with the official link, eligibility and deadline.
-5. Follow-ups work the same way: "Which one closes first?" — or type instead
-   of speaking; both paths give the same answer.
-6. If the audio is unclear, it asks you to say it once more — it never invents
-   an answer. Every match comes only from the sample list.
+5. You can refine by speaking again: for example "only grants" ranks grants
+   first. Each question is matched on its own; there is no memory of the
+   earlier question. You can also type instead of speaking; both paths use the
+   same matcher.
+6. If nothing in the question matches the sample list (no place, sector, type
+   or NGO word), it says so and asks for a state, a sector, or grant/fellowship.
+   If the audio is empty it asks you to say it once more. It never invents an
+   answer. Every match comes only from the sample list.
 
 ## Layout
 
@@ -59,6 +63,11 @@ app/
 ```
 
 ## Honest limits (prototype scope)
+
+- The small CPU speech model is imperfect on accented or noisy Hindi. The
+  matcher knows common Devanagari spellings, but misheard words can miss.
+- Most sample records state no closing date, so the reply says so instead of
+  guessing one.
 
 - Spoken replies use the browser's voices; where a language voice is missing
   (for example Odia on some devices), the reply falls back to a Hindi voice.

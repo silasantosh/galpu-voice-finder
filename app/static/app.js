@@ -40,12 +40,12 @@ function showCards(matches) {
     a.target = "_blank";
     a.rel = "noopener";
     a.innerHTML = `<strong>${m.title}</strong><span>${m.organiser}</span>
-      <span>Who can apply: ${m.who_can_apply}</span>
+      ${m.who_can_apply && m.who_can_apply !== "None" ? `<span>Who can apply: ${m.who_can_apply}</span>` : ""}
       <span>Deadline: ${m.deadline}</span>
       <button class="listen" type="button">🔊 Listen</button>`;
     a.querySelector(".listen").addEventListener("click", ev => {
       ev.preventDefault();
-      speak(`${m.title}, by ${m.organiser}. Who can apply: ${m.who_can_apply}. Deadline: ${m.deadline}.`, "en");
+      speak(`${m.title}, by ${m.organiser}. ${m.who_can_apply && m.who_can_apply !== "None" ? "Who can apply: " + m.who_can_apply + ". " : ""}Deadline: ${m.deadline}.`, "en");
     });
     cardsEl.appendChild(a);
   });
@@ -55,7 +55,7 @@ async function handleAnswer(res) {
   const data = await res.json();
   if (data.transcript) addMsg("you", data.transcript);
   addMsg("galpu", data.reply);
-  speak(data.reply, data.lang);
+  speak(data.spoken || data.reply, data.lang);
   showCards(data.matches);
   statusEl.textContent = "Tap the mic and ask another, or open a card.";
 }
