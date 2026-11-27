@@ -101,13 +101,26 @@ async def ask(audio: UploadFile = File(...)):
         f.write(raw)
     model = get_model()
     # A small CPU model sometimes stops early on accented or noisy speech.
-    # Try two decoding settings and keep the fuller transcript.
+    # Try a few fixed decoding settings (no random sampling) and keep the
+    # fullest transcript.
     transcript, lang = "", "en"
-    for opts in ({}, {"beam_size": 5, "vad_filter": True}):
+    for opts in (
+        {"beam_size": 5, "temperature": 0.0},
+        {"beam_size": 5, "temperature": 0.0, "vad_filter": True},
+        {"beam_size": 5, "temperature": 0.0, "condition_on_previous_text": False},
+    ):
         segments, info = model.transcribe(tmp, **opts)
         text = " ".join(seg.text for seg in segments).strip()
         if len(text) > len(transcript):
             transcript, lang = text, getattr(info, "language", "en") or "en"
+    # Very short clips are often mis-detected as English and come back as a
+    # made-up phrase. If so, try once more as Hindi and keep it only when it
+    # actually contains Devanagari text.
+    if len(transcript) < 25 and lang != "hi":
+        segments, info = model.transcribe(tmp, language="hi", beam_size=5, temperature=0.0, vad_filter=True)
+        hi_text = " ".join(seg.text for seg in segments).strip()
+        if any("\u0900" <= ch <= "\u097f" for ch in hi_text):
+            transcript, lang = hi_text, "hi"
     if not transcript:
         return JSONResponse({
             "transcript": "",
