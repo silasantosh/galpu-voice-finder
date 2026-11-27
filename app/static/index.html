@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galpu — voice-first opportunity finder (prototype)</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Galpu</h1>
+    <p class="tag">Ask by voice. Hear which opportunity fits your nonprofit.</p>
+    <p class="proto">Prototype for Build for Bharat · sample data only</p>
+  </header>
+
+  <section class="mic-row">
+    <button id="mic" aria-label="Tap and speak">🎙️</button>
+    <div>
+      <p id="status">Tap the mic and speak in your language.</p>
+      <p class="hint">Example: "I run a small education nonprofit in Odisha. What can I apply for?"</p>
+    </div>
+  </section>
+
+  <section id="chat" aria-live="polite"></section>
+
+  <section class="typed">
+    <input id="typed" type="text" placeholder="…or type your question here">
+    <button id="send">Ask</button>
+  </section>
+
+  <section id="cards"></section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
