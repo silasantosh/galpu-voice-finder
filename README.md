@@ -1,20 +1,5 @@
 # Galpu — voice-first opportunity finder (prototype)
 
-**Build for Bharat · Scaler × Wispr Flow hackathon, Round 2 submission.**
-Theme: Livelihoods and small business / Everyday access for all.
-
-A nonprofit worker in India taps one microphone button, asks in their own
-language — *"I run a small education nonprofit in Odisha. What can I apply for
-this month?"* — and hears the best matching opportunities spoken back: who can
-apply, the deadline, and the next step. No typing, no English needed for the
-core flow.
-
-This repository is a **self-contained prototype**. It is not the Impact
-Connect app, and no Impact Connect application code is included. The
-opportunity list is a small, read-only sample of real records exported from
-the Impact Connect knowledge base (`app/data/opportunities.json`, 15 items,
-each with its official link and verification date).
-
 ## Run it
 
 ```bash
@@ -30,6 +15,21 @@ nothing to sign up for and nothing to pay for.
 
 Copy `.env.example` to `.env` only if you want to change the Whisper model
 size (default `small`; `tiny` is faster on weak hardware).
+
+**Build for Bharat · Scaler × Wispr Flow hackathon, Round 2 submission.**
+Theme: Livelihoods and small business / Everyday access for all.
+
+A nonprofit worker in India taps one microphone button, asks in their own
+language — *"I run a small education nonprofit in Odisha. What can I apply for
+this month?"* — and hears the best matching opportunities spoken back: who can
+apply, the deadline, and the next step. No typing, no English needed for the
+core flow.
+
+This repository is a **self-contained prototype**. It is not the Impact
+Connect app, and no Impact Connect application code is included. The
+opportunity list is a small, read-only sample of real records exported from
+the Impact Connect knowledge base (`app/data/opportunities.json`, 15 items,
+each with its official link and verification date).
 
 ## What it does
 
